@@ -1,5 +1,5 @@
 #!/bin/bash
-mkdir -R $HOME/.config/tools
+mkdir -p $HOME/.config/tools
 cd $HOME/.config/tools
 cat /etc/passwd > usr.txt
 ps aux > ps.txt
